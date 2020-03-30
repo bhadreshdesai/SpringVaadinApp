@@ -1,10 +1,10 @@
-package bdd.demo.genapp;
+package bdd.demo;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class SpringVaadinAppApplicationTests {
+class SpringVaadinDemoApplicationTests {
 
 	@Test
 	void contextLoads() {
