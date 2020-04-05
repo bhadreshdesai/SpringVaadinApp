@@ -3,6 +3,7 @@ plugins {
 	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
 	id 'java'
 	id 'jacoco'
+	id 'com.github.spacialcircumstances.gradle-cucumber-reporting' version '0.1.19'
 }
 
 group = 'bdd.demo'
@@ -21,8 +22,9 @@ repositories {
 }
 
 ext {
-	lombokVersion = "1.18.10"
-	generatedSourcesDir = "$buildDir/generated/sources"
+	generatedSourcesDir = "${buildDir}/generated/sources"
+	ver_cucumber = '5.6.0'
+	ver_lombok = '1.18.10'
 }
 
 dependencies {
@@ -31,14 +33,18 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
-	compileOnly "org.projectlombok:lombok:${lombokVersion}"
-	annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+	compileOnly "org.projectlombok:lombok:${ver_lombok}"
+	annotationProcessor "org.projectlombok:lombok:${ver_lombok}"
 
 	runtimeOnly 'com.h2database:h2'
 
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
-		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+		// Need JUnit4 for Cucumber
+		//exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
+	testImplementation "io.cucumber:cucumber-java:${ver_cucumber}"
+	testImplementation "io.cucumber:cucumber-junit:${ver_cucumber}"
+	testImplementation "io.cucumber:cucumber-spring:${ver_cucumber}"
 }
 
 test {
@@ -47,6 +53,19 @@ test {
 
 sourceSets.main.java {
 	srcDir generatedSourcesDir
+}
+
+cucumberReports {
+	buildId = '0'
+	outputDir = file("${buildDir}/reports/cucumber")
+	reports = files("${buildDir}/reports/cucumber/cucumber-report.json")
+}
+
+// Work around to get a clickable link in IntelliJ on Windows
+// generateCucumberReports outputs file:// whereas intellij needs file:/// for it to be clickable
+generateCucumberReports.doLast {
+	def reportFile = file("${project.extensions.cucumberReports.outputDir.absolutePath}/cucumber-html-reports/overview-features.html")
+	println 'file://' + reportFile.getAbsoluteFile().toURI().getPath()
 }
 
 jacocoTestReport {
